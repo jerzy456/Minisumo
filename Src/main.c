@@ -36,12 +36,11 @@
 
 /* USER CODE BEGIN Includes */
 #include "pid.h"
-#include "vl53l0x_api.h"
-#include "I2C.h"
+#include "vl53l0x_user_port.h"
 #include "hardware.h"
 #include "communication.h"
 #include "motion.h"
-#include "state_machine.h"
+
 
 /* USER CODE END Includes */
 
@@ -106,27 +105,18 @@ int main(void) {
 	uint8_t data;
 
 	//Czujnik 1
-	VL53L0X_Error Status = VL53L0X_ERROR_NONE;
-	VL53L0X_Dev_t MyDevice;
-	VL53L0X_Dev_t *pMyDevice = &MyDevice;
-	VL53L0X_Version_t Version;
-	VL53L0X_Version_t *pVersion = &Version;
-	VL53L0X_DeviceInfo_t DeviceInfo;
-	int32_t status_int;
+
 
 	HAL_GPIO_WritePin(XSHUT1_GPIO_Port, XSHUT1_Pin, 1); //wylacz 2
 	HAL_Delay(50);
 
 	//Czujnik 1
-	VL53L0X_RangingMeasurementData_t RangingMeasurementData;
-	VL53L0X_RangingMeasurementData_t *pRangingMeasurementData =
-			&RangingMeasurementData;
-	pRangingMeasurementData->RangeMilliMeter = 0;
+
 
 	stat = HAL_I2C_Mem_Read(&hi2c1, 0x52, 0xC1,
 	I2C_MEMADD_SIZE_8BIT, &data, 1, 100);
 	// Initialize
-	//pMyDevice->I2cDevAddr = (0b0101001 << 1);
+	pMyDevice->I2cDevAddr = (0b0101001 << 1);
 	pMyDevice->I2cDevAddr = 0x52;
 	pMyDevice->comms_type = 1;
 	pMyDevice->comms_speed_khz = 100;
@@ -169,25 +159,15 @@ int main(void) {
 	if (Status == VL53L0X_ERROR_NONE) {
 		Status = VL53L0X_init(pMyDevice);
 	}
+
 	HAL_Delay(50);
 	HAL_GPIO_WritePin(XSHUT1_GPIO_Port, XSHUT1_Pin, 0);		//wylacz 2
-
 	HAL_Delay(50);
 
 	//Czujnik 2
-	VL53L0X_Error Status2 = VL53L0X_ERROR_NONE;
-	VL53L0X_Dev_t MyDevice2;
-	VL53L0X_Dev_t *pMyDevice2 = &MyDevice2;
-	VL53L0X_Version_t Version2;
-	VL53L0X_Version_t *pVersion2 = &Version2;
-	VL53L0X_DeviceInfo_t DeviceInfo2;
-	int32_t status_int2;
 
-	//Czujnik 2
 
-	VL53L0X_RangingMeasurementData_t RangingMeasurementData2;
-	VL53L0X_RangingMeasurementData_t *pRangingMeasurementData2 =
-			&RangingMeasurementData2;
+
 	pRangingMeasurementData2->RangeMilliMeter = 0;
 
 	//pMyDevice->I2cDevAddr = (0b0101001 << 1);
