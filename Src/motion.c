@@ -21,6 +21,7 @@ pid_params pid_params_mot3;
 pid_params pid_params_mot4;
 
 
+
 void Motion_init(void){
 	//init motor pids values
 	PID_init(18, 0.74, 0, 100, &pid_params_mot1);
@@ -34,6 +35,8 @@ void Motion_init(void){
 	HAL_Set_PWM();
 	//Motor control interrupt ON
 	HAL_TIM_Base_Start_IT(&htim10);
+
+
 }
 
 void Motion_tick(void){

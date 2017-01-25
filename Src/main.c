@@ -41,7 +41,6 @@
 #include "communication.h"
 #include "motion.h"
 
-
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
@@ -54,6 +53,8 @@ uint16_t KTIR_data[] = { 0, 0, 0, 0, 0 };
 uint32_t measurement = 0;
 uint32_t measurement2 = 0;
 uint8_t dataReady = 0;
+
+int diff=0;
 
 enum robot_State {
 	WAIT, SEARCH, FIGHT, BACK
@@ -106,12 +107,10 @@ int main(void) {
 
 	//Czujnik 1
 
-
 	HAL_GPIO_WritePin(XSHUT1_GPIO_Port, XSHUT1_Pin, 1); //wylacz 2
 	HAL_Delay(50);
 
 	//Czujnik 1
-
 
 	stat = HAL_I2C_Mem_Read(&hi2c1, 0x52, 0xC1,
 	I2C_MEMADD_SIZE_8BIT, &data, 1, 100);
@@ -165,8 +164,6 @@ int main(void) {
 	HAL_Delay(50);
 
 	//Czujnik 2
-
-
 
 	pRangingMeasurementData2->RangeMilliMeter = 0;
 
@@ -239,27 +236,38 @@ int main(void) {
 		case WAIT:
 			reqSpeedRight = 0;
 			reqSpeedLeft = 0;
-
+			diff=(int)(measurement-measurement2)*0.01;//meas2 left meas right
 			break;
 		case SEARCH:
 			reqSpeedRight = 8;
+			reqSpeedLeft = 0;
 
-			if (measurement < 150 && measurement2 < 150)
+			if (measurement < 200 && measurement2 < 200)
 				state = FIGHT;
-			if (KTIR_data[3] < 1000) {
+			if ((KTIR_data[0] < 1000) || (KTIR_data[1] < 1000)
+					|| (KTIR_data[3] < 1000) || (KTIR_data[3] < 1000)
+					|| (KTIR_data[4] < 1000)) {
 				state = BACK;
 			}
 			break;
 		case FIGHT:
-			reqSpeedLeft = 8;
-			reqSpeedRight = 8;
-			if (KTIR_data[3] < 1000) {
+			diff=(int)(measurement-measurement2)*0.05;//meas2 left meas right
+			reqSpeedLeft = 6-diff;
+			reqSpeedRight = 6+diff;
+			if(reqSpeedLeft>8)reqSpeedLeft=8;
+			if(reqSpeedRight>8)reqSpeedRight=8;
+			if(reqSpeedLeft<0)reqSpeedLeft=0;
+			if(reqSpeedRight<0)reqSpeedRight=0;
+
+			if ((KTIR_data[0] < 1000) || (KTIR_data[1] < 1000)
+					|| (KTIR_data[2] < 1000) || (KTIR_data[3] < 1000)
+					|| (KTIR_data[4] < 1000)) {
 				state = BACK;
 			}
 			break;
 		case BACK:
 			reqSpeedLeft = -8;
-			reqSpeedRight = -8;
+			reqSpeedRight = -7;
 			HAL_Delay(600);
 			state = SEARCH;
 
